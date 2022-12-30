@@ -1,1 +1,1 @@
-# buscompany_java_backend
+runs on localhost, see parameters in application properties
