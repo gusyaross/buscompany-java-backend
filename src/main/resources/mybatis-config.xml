@@ -1,0 +1,13 @@
+<configuration>
+    <typeAliases>
+        <typeAlias alias="Admin" type="net.buscompany.model.Admin"/>
+        <typeAlias alias="Client" type="net.buscompany.model.Client"/>
+        <typeAlias alias="User" type="net.buscompany.model.User"/>
+        <typeAlias alias="Bus" type="net.buscompany.model.Bus"/>
+        <typeAlias alias="Schedule" type="net.buscompany.model.Schedule"/>
+        <typeAlias alias="AssignedTrip" type="net.buscompany.model.AssignedTrip"/>
+        <typeAlias alias="Trip" type="net.buscompany.model.Trip"/>
+        <typeAlias alias="Order" type="net.buscompany.model.Order"/>
+        <typeAlias alias="Passenger" type="net.buscompany.model.Passenger"/>
+    </typeAliases>
+</configuration>

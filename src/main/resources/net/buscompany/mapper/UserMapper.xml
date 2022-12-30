@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.buscompany.dao.UserDao" >
+
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (login, password, firstname, lastname, patronymic)
+        VALUES (#{user.login}, #{user.password}, #{user.firstName}, #{user.lastName}, #{user.patronymic})
+    </insert>
+
+    <insert id="insertSession">
+        INSERT INTO session (id_user, uuid, last_action_time) VALUES (#{user.id}, #{uuid}, CURRENT_TIME())
+    </insert>
+    
+    <delete id="deleteSession">
+        DELETE FROM session WHERE uuid = #{uuid}
+    </delete>
+
+    <select id="getAdminCount" resultType="int">
+        SELECT COUNT(*) FROM user WHERE user_type = 'ADMIN'
+    </select>
+
+    <delete id="deleteUser">
+        DELETE FROM user WHERE id = #{user.id}
+    </delete>
+
+    <update id="updateUser">
+        UPDATE user SET firstname = #{user.firstName}, lastname = #{user.lastName},
+        password = #{user.password} WHERE id = #{user.id};
+    </update>
+
+    <select id="getBusByName" resultType="Bus">
+        SELECT id, name, place_count as placeCount FROM bus WHERE name = #{name}
+    </select>
+
+    <select id="getPassengerByPlaceNumber" resultType="Passenger">
+        SELECT firstname, lastname, passport FROM passenger JOIN place ON passenger.id = place.id_passenger WHERE
+        place_number = #{placeNumber} AND place.id_assigned_trip = #{assignedTrip.id}
+    </select>
+
+</mapper>

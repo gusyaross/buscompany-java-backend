@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.buscompany.dao.AdminDao" >
+
+    <insert id="insertAdmin" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO admin (id_user, position) VALUES (#{admin.id}, #{admin.position})
+    </insert>
+
+    <insert id="updateUserType">
+        UPDATE user SET user_type = 'ADMIN' WHERE id = #{admin.id}
+    </insert>
+
+    <select id="getAdminByLogin" resultType="Admin">
+        SELECT id, login, password, user_type as userType, firstname, lastname, patronymic, position FROM user JOIN admin
+        ON user.id = admin.id_user WHERE login = #{login}
+    </select>
+
+    <select id="getAdminBySession" resultType="Admin">
+        SELECT id, login, password, user_type as userType, firstname, lastname, patronymic, position FROM user JOIN admin
+        ON user.id = admin.id_user JOIN session ON session.id_user = user.id WHERE uuid = #{uuid}
+    </select>
+
+    <update id="updateAdmin">
+        UPDATE admin SET position = #{admin.position} WHERE id_user = #{admin.id}
+    </update>
+
+    <select id="getAllClients" resultType="Client">
+        SELECT id, login, password, user_type as userType, firstname, lastname, patronymic, email, phone_number
+        as phoneNumber FROM user JOIN client ON user.id = client.id_user
+    </select>
+
+    <insert id="insertBus" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO bus (name, place_count) VALUES (#{bus.name}, #{bus.placeCount})
+    </insert>
+
+    <select id="getAllBuses" resultType="Bus">
+        SELECT name, place_count as placeCount FROM bus;
+    </select>
+
+    <insert id="addTrip" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO trip (id_bus, from_station, to_station, start_time, duration_in_minutes, price) VALUES
+        (#{trip.bus.id}, #{trip.fromStation}, #{trip.toStation}, #{trip.startTime}, #{trip.durationInMinutes}, #{trip.price})
+    </insert>
+    
+    <insert id="addAssignedTrip" useGeneratedKeys="true" keyProperty="assignedTrip.id">
+        INSERT INTO assigned_trip (id_trip, date_trip, free_places) VALUES
+        (#{trip.id}, #{assignedTrip.dateTrip}, #{assignedTrip.freePlaces})
+    </insert>
+
+    <insert id="addSchedule">
+        INSERT INTO schedule (id_trip, from_date, to_date, period) VALUES
+        (#{trip.id}, #{schedule.fromDate}, #{schedule.toDate}, #{schedule.period})
+    </insert>
+
+    <insert id="addPlace">
+        INSERT INTO place (place_number, id_assigned_trip) VALUES (#{placeNumber}, #{assignedTrip.id})
+    </insert>
+
+    <delete id="deleteAssignedTrips">
+        DELETE FROM assigned_trip WHERE id_trip = #{trip.id}
+    </delete>
+    
+    <update id="updateTrip">
+        UPDATE trip SET id_bus = #{trip.bus.id}, from_station = #{trip.fromStation}, to_station = #{trip.toStation},
+        start_time = #{trip.startTime}, duration_in_minutes = #{trip.durationInMinutes}, price = #{trip.price} WHERE
+        id = #{trip.id}
+    </update>
+
+    <update id="updateSchedule">
+        UPDATE schedule SET from_date = #{schedule.fromDate}, to_date = #{schedule.toDate}, period = #{schedule.period}
+        WHERE id_trip = #{trip.id}
+    </update>
+
+    <delete id="deleteTrip">
+        DELETE FROM trip WHERE id = #{trip.id}
+    </delete>
+
+    <update id="approveTrip">
+        UPDATE trip SET approved = #{trip.approved} WHERE id = #{trip.id}
+    </update>
+
+    <delete id="deleteUsers">
+        DELETE FROM user
+    </delete>
+
+    <delete id="deleteBuses">
+        DELETE FROM bus
+    </delete>
+
+    <delete id="deleteTrips">
+        DELETE FROM trip
+    </delete>
+
+</mapper>

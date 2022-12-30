@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.buscompany.dao.UserDao" >
+
+    <resultMap id="resultTrip" type="Trip">
+        <id property="id" column="id_trip"/>
+        <result property="approved" column="approved"/>
+        <result property="fromStation" column="from_station"/>
+        <result property="toStation" column="to_station"/>
+        <result property="startTime" column="start_time"/>
+        <result property="durationInMinutes" column="duration_in_minutes"/>
+        <result property="price" column="price"/>
+        <association property="bus" resultMap="resultBus"/>
+        <association property="schedule" resultMap="resultSchedule"/>
+        <collection property="assignedTrips" column="id_trip" select="selectAssignedTripsById" foreignColumn="id_trip" fetchType="lazy"/>
+    </resultMap>
+
+    <resultMap id="resultBus" type="Bus">
+        <id property="id" column="id_bus"/>
+        <result property="name" column="bus_name"/>
+        <result property="placeCount" column="place_count"/>
+    </resultMap>
+    
+    <resultMap id="resultSchedule" type="Schedule">
+        <result property="fromDate" column="from_date"/>
+        <result property="toDate" column="to_date"/>
+        <result property="period" column="period"/>
+    </resultMap>
+    
+    <resultMap id="resultAssignedTrip" type="AssignedTrip">
+        <id property="id" column="id"/>
+        <result property="dateTrip" column="date_trip"/>
+        <result property="freePlaces" column="free_places"/>
+        <collection property="places" column="id" select="selectPlaceAndPassenger" foreignColumn="id_assigned_trip" fetchType="lazy"/>
+    </resultMap>
+
+    <resultMap id="resultPlaceAndPassenger" type="Place">
+        <result property="placeNumber" column="place_number"/>
+        <association property="passenger" resultMap="resultPassenger"/>
+    </resultMap>
+
+    <resultMap id="resultPassenger" type="Passenger">
+        <id property="id" column="id_passenger"/>
+        <result property="passport" column="passport"/>
+        <result property="firstName" column="firstname"/>
+        <result property="lastName" column="lastname"/>
+    </resultMap>
+
+    <select id="selectAssignedTripsById" resultMap="resultAssignedTrip">
+        SELECT id, date_trip, free_places FROM assigned_trip WHERE id_trip = #{id_trip}
+    </select>
+    
+    <select id="selectPlaceAndPassenger" resultMap="resultPlaceAndPassenger">
+        SELECT id_assigned_trip, place_number, id_passenger, passport, firstname, lastname FROM place
+        LEFT OUTER JOIN passenger ON id_passenger = passenger.id WHERE id_assigned_trip = #{id_assigned_trip}
+    </select>
+
+    <select id="getTripById" resultMap="resultTrip">
+        SELECT trip.id AS id_trip, bus.id AS id_bus, bus.name AS bus_name, place_count, from_station, to_station,
+        start_time, duration_in_minutes, price, approved, from_date, to_date, period FROM trip INNER JOIN bus ON trip.id_bus = bus.id
+        LEFT OUTER JOIN schedule ON trip.id = schedule.id_trip LEFT OUTER JOIN assigned_trip ON trip.id = assigned_trip.id_trip
+        WHERE trip.id = #{tripId}
+    </select>
+
+    <select id="getTripsFromStation" resultMap="resultTrip">
+        SELECT trip.id AS id_trip, bus.id AS id_bus, bus.name AS bus_name, place_count, from_station, to_station,
+        start_time, duration_in_minutes, price, approved, from_date, to_date, period FROM trip INNER JOIN bus ON trip.id_bus = bus.id
+        LEFT OUTER JOIN schedule ON trip.id = schedule.id_trip LEFT OUTER JOIN assigned_trip ON trip.id = assigned_trip.id_trip
+        WHERE from_station = #{fromStation}
+    </select>
+
+    <select id="getTripsToStation" resultMap="resultTrip">
+        SELECT trip.id AS id_trip, bus.id AS id_bus, bus.name AS bus_name, place_count, from_station, to_station,
+        start_time, duration_in_minutes, price, approved, from_date, to_date, period FROM trip INNER JOIN bus ON trip.id_bus = bus.id
+        LEFT OUTER JOIN schedule ON trip.id = schedule.id_trip LEFT OUTER JOIN assigned_trip ON trip.id = assigned_trip.id_trip
+        WHERE to_station = #{toStation}
+    </select>
+
+    <select id="getTripsFromDate" resultMap="resultTrip">
+        SELECT trip.id AS id_trip, bus.id AS id_bus, bus.name AS bus_name, place_count, from_station, to_station,
+        start_time, duration_in_minutes, price, approved, from_date, to_date, period FROM trip INNER JOIN bus ON trip.id_bus = bus.id
+        LEFT OUTER JOIN schedule ON trip.id = schedule.id_trip LEFT OUTER JOIN assigned_trip ON trip.id = assigned_trip.id_trip
+        WHERE date_trip >= #{fromDate}
+    </select>
+
+    <select id="getTripsToDate" resultMap="resultTrip">
+        SELECT trip.id AS id_trip, bus.id AS id_bus, bus.name AS bus_name, place_count, from_station, to_station,
+        start_time, duration_in_minutes, price, approved, from_date, to_date, period FROM trip INNER JOIN bus ON trip.id_bus = bus.id
+        LEFT OUTER JOIN schedule ON trip.id = schedule.id_trip LEFT OUTER JOIN assigned_trip ON trip.id = assigned_trip.id_trip
+        WHERE date_trip &lt;= #{toDate}
+    </select>
+
+    <select id="getTripsByBus" resultMap="resultTrip">
+        SELECT trip.id AS id_trip, bus.id AS id_bus, bus.name AS bus_name, place_count, from_station, to_station,
+        start_time, duration_in_minutes, price, approved, from_date, to_date, period FROM trip INNER JOIN bus ON trip.id_bus = bus.id
+        LEFT OUTER JOIN schedule ON trip.id = schedule.id_trip LEFT OUTER JOIN assigned_trip ON trip.id = assigned_trip.id_trip
+        WHERE bus.name = #{busName}
+    </select>
+
+    <select id="getAllTrips" resultMap="resultTrip">
+        SELECT trip.id AS id_trip, bus.id AS id_bus, bus.name AS bus_name, place_count, from_station, to_station,
+        start_time, duration_in_minutes, price, approved, from_date, to_date, period FROM trip INNER JOIN bus ON trip.id_bus = bus.id
+        LEFT OUTER JOIN schedule ON trip.id = schedule.id_trip LEFT OUTER JOIN assigned_trip ON trip.id = assigned_trip.id_trip
+    </select>
+
+</mapper>

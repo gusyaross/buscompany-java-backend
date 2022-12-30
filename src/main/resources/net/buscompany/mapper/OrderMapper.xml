@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="net.buscompany.dao.UserDao" >
+
+    <resultMap id="orderResult" type="Order">
+        <id property="id" column="id_order"/>
+        <association property="assignedTrip" resultMap="assignedTripResult"/>
+        <collection property="passengers" column="id_order" select="selectPassengerByOrderId" foreignColumn="id_order" fetchType="lazy"/>
+    </resultMap>
+
+    <resultMap id="assignedTripResult" type="AssignedTrip">
+        <id property="id" column="id_assigned_trip"/>
+        <result property="dateTrip" column="date_trip"/>
+        <result property="freePlaces" column="free_places"/>
+        <association property="trip" resultMap="tripResult"/>
+        <collection property="places" column="id_assigned_trip" select="selectPlaceWithPassengers" foreignColumn="id_assigned_trip" fetchType="lazy"/>
+    </resultMap>
+
+    <resultMap id="tripResult" type="Trip">
+        <id property="id" column="id_trip"/>
+        <result property="approved" column="approved"/>
+        <result property="fromStation" column="from_station"/>
+        <result property="toStation" column="to_station"/>
+        <result property="startTime" column="start_time"/>
+        <result property="durationInMinutes" column="duration_in_minutes"/>
+        <result property="price" column="price"/>
+        <association property="bus" resultMap="busResult"/>
+    </resultMap>
+
+    <resultMap id="busResult" type="Bus">
+        <id property="id" column="id_bus"/>
+        <result property="name" column="bus_name"/>
+        <result property="placeCount" column="place_count"/>
+    </resultMap>
+
+    <resultMap id="placeAndPassengerResult" type="Place">
+        <result property="placeNumber" column="place_number"/>
+        <association property="passenger" resultMap="passengerResult"/>
+    </resultMap>
+
+    <resultMap id="passengerResult" type="Passenger">
+        <id property="id" column="id_passenger"/>
+        <result property="passport" column="passport"/>
+        <result property="firstName" column="firstname"/>
+        <result property="lastName" column="lastname"/>
+    </resultMap>
+
+    <select id="selectPlaceWithPassengers" resultMap="placeAndPassengerResult">
+        SELECT id_assigned_trip, place_number, id_passenger, passport, firstname, lastname FROM place
+        LEFT OUTER JOIN passenger ON id_passenger = passenger.id WHERE id_assigned_trip = #{id_assigned_trip}
+    </select>
+
+    <select id="selectPassengerByOrderId" resultMap="passengerResult">
+        SELECT id as id_passenger, passport, firstname, lastname FROM passenger WHERE id_order = #{id}
+    </select>
+
+    <select id="getOrderById" resultMap="orderResult">
+        SELECT `order`.id AS id_order, id_assigned_trip, date_trip, free_places, trip.id as id_trip, bus.id as id_bus,
+        bus.name AS bus_name, place_count, approved, from_station, to_station, start_time, duration_in_minutes,
+        price FROM `order` INNER JOIN assigned_trip ON `order`.id_assigned_trip = assigned_trip.id JOIN
+        trip ON trip.id = assigned_trip.id_trip INNER JOIN bus ON trip.id_bus = bus.id WHERE `order`.id = #{orderId}
+    </select>
+
+    <select id="getOrdersByClientId" resultMap="orderResult">
+        SELECT `order`.id AS id_order, id_assigned_trip, date_trip, free_places, trip.id as id_trip, bus.id as id_bus,
+        bus.name AS bus_name, place_count, approved, from_station, to_station, start_time, duration_in_minutes,
+        price FROM `order` INNER JOIN assigned_trip ON `order`.id_assigned_trip = assigned_trip.id JOIN
+        trip ON trip.id = assigned_trip.id_trip INNER JOIN bus ON trip.id_bus = bus.id WHERE `order`.id_client = #{clientId}
+    </select>
+
+    <select id="getOrderByIdAndClientId" resultMap="orderResult">
+        SELECT `order`.id AS id_order, id_assigned_trip, date_trip, free_places, trip.id as id_trip, bus.id as id_bus,
+        bus.name AS bus_name, place_count, approved, from_station, to_station, start_time, duration_in_minutes,
+        price FROM `order` INNER JOIN assigned_trip ON `order`.id_assigned_trip = assigned_trip.id JOIN
+        trip ON trip.id = assigned_trip.id_trip  INNER JOIN bus ON trip.id_bus = bus.id WHERE `order`.id = #{orderId}
+        AND id_client = #{clientId}
+    </select>
+
+    <select id="getOrdersFromStation" resultMap="orderResult">
+        SELECT `order`.id AS id_order, id_assigned_trip, date_trip, free_places, trip.id as id_trip, bus.id as id_bus,
+        bus.name AS bus_name, place_count, approved, from_station, to_station, start_time, duration_in_minutes,
+        price FROM `order` INNER JOIN assigned_trip ON `order`.id_assigned_trip = assigned_trip.id JOIN
+        trip ON trip.id = assigned_trip.id_trip  INNER JOIN bus ON trip.id_bus = bus.id WHERE from_station = #{fromStation}
+    </select>
+
+    <select id="getOrdersToStation" resultMap="orderResult">
+        SELECT `order`.id AS id_order, id_assigned_trip, date_trip, free_places, trip.id as id_trip, bus.id as id_bus,
+        bus.name AS bus_name, place_count, approved, from_station, to_station, start_time, duration_in_minutes,
+        price FROM `order` INNER JOIN assigned_trip ON `order`.id_assigned_trip = assigned_trip.id JOIN
+        trip ON trip.id = assigned_trip.id_trip  INNER JOIN bus ON trip.id_bus = bus.id WHERE to_station = #{toStation}
+    </select>
+
+    <select id="getOrdersFromDate" resultMap="orderResult">
+        SELECT `order`.id AS id_order, id_assigned_trip, date_trip, free_places, trip.id as id_trip, bus.id as id_bus,
+        bus.name AS bus_name, place_count, approved, from_station, to_station, start_time, duration_in_minutes,
+        price FROM `order` INNER JOIN assigned_trip ON `order`.id_assigned_trip = assigned_trip.id JOIN
+        trip ON trip.id = assigned_trip.id_trip INNER JOIN bus ON trip.id_bus = bus.id WHERE date_trip >= #{fromDate}
+    </select>
+
+    <select id="getOrdersToDate" resultMap="orderResult">
+        SELECT `order`.id AS id_order, id_assigned_trip, date_trip, free_places, trip.id as id_trip, bus.id as id_bus,
+        bus.name AS bus_name, place_count, approved, from_station, to_station, start_time, duration_in_minutes,
+        price FROM `order` INNER JOIN assigned_trip ON `order`.id_assigned_trip = assigned_trip.id JOIN
+        trip ON trip.id = assigned_trip.id_trip INNER JOIN bus ON trip.id_bus = bus.id WHERE date_trip &lt;= #{toDate}
+    </select>
+
+    <select id="getOrdersByBus" resultMap="orderResult">
+        SELECT `order`.id AS id_order, id_assigned_trip, date_trip, free_places, trip.id as id_trip, bus.id as id_bus,
+        bus.name AS bus_name, place_count, approved, from_station, to_station, start_time, duration_in_minutes,
+        price FROM `order` INNER JOIN assigned_trip ON `order`.id_assigned_trip = assigned_trip.id JOIN
+        trip ON trip.id = assigned_trip.id_trip INNER JOIN bus ON trip.id_bus = bus.id WHERE bus.name = #{busName}
+    </select>
+
+    <select id="getAllOrders" resultMap="orderResult">
+        SELECT `order`.id AS id_order, id_assigned_trip, date_trip, free_places, trip.id as id_trip, bus.id as id_bus,
+        bus.name AS bus_name, place_count, approved, from_station, to_station, start_time, duration_in_minutes,
+        price FROM `order` INNER JOIN assigned_trip ON `order`.id_assigned_trip = assigned_trip.id JOIN
+        trip ON trip.id = assigned_trip.id_trip INNER JOIN bus ON trip.id_bus = bus.id
+    </select>
+
+</mapper>
